@@ -117,6 +117,9 @@ class SharedSentinelState:
     # Rate limit tracking (from Unkey responses)
     rate_limit_remaining: int = 100
 
+    # Demo mode — pauses real sentiment loop so injected scores aren't overridden
+    demo_active: bool = False
+
     # --- asyncio primitives (initialised in main.py via init_events()) ---
     webcam_fill_event: Optional[asyncio.Event] = field(default=None, repr=False)
     handoff_trigger: Optional[asyncio.Event] = field(default=None, repr=False)

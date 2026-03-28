@@ -1,0 +1,32 @@
+{
+  "name": "flowstate-sentinel",
+  "version": "1.0.0",
+  "description": "Ambient stress detection agent that monitors developer fatigue via webcam and autonomously takes over GCP Cloud Shell when stress threshold is crossed. Powered by Gemini 2.0 Flash vision, Railtracks orchestration, and Augment Code codebase context.",
+  "main": "flowstate/main.py",
+  "files": [
+    "SKILL.md",
+    "README.md",
+    "Dockerfile",
+    "pyproject.toml",
+    "flowstate/**",
+    "ui/app/**",
+    "ui/components/**",
+    "ui/hooks/**",
+    "ui/package.json",
+    "ui/tsconfig.json",
+    "ui/next.config.ts",
+    "ui/postcss.config.mjs",
+    "tests/**",
+    ".env.example"
+  ],
+  "keywords": [
+    "stress-detection",
+    "gemini",
+    "claude-computer-use",
+    "webcam",
+    "ambient-agent",
+    "railtracks",
+    "augment-code",
+    "gcp"
+  ]
+}

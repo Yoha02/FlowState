@@ -36,6 +36,7 @@ export interface UseFlowStateReturn {
   connected: boolean;
   approve: () => Promise<void>;
   reject: () => Promise<void>;
+  startDemo: () => Promise<void>;
 }
 
 const DEFAULT_STATUS: StatusUpdate = {
@@ -131,6 +132,12 @@ export function useFlowState(): UseFlowStateReturn {
     });
   }, []);
 
+  const startDemo = useCallback(async () => {
+    setDoneMessage(null);
+    setActions([]);
+    await fetch(`${API_BASE}/demo/start`, { method: "POST" });
+  }, []);
+
   return {
     status,
     handoffPending,
@@ -141,5 +148,6 @@ export function useFlowState(): UseFlowStateReturn {
     connected,
     approve,
     reject,
+    startDemo,
   };
 }

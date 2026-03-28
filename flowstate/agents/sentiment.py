@@ -24,6 +24,9 @@ async def run(state: SharedSentinelState) -> None:
             await state.webcam_fill_event.wait()
             state.webcam_fill_event.clear()
 
+            if state.demo_active:
+                continue  # Skip real scoring during demo
+
             async with state.webcam_lock:
                 frames = list(state.webcam_buffer)
 

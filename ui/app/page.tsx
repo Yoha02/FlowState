@@ -17,6 +17,7 @@ export default function Home() {
     connected,
     approve,
     reject,
+    startDemo,
   } = useFlowState();
 
   return (
@@ -48,6 +49,35 @@ export default function Home() {
         {/* Left — context + metrics */}
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
           <TaskContextCard status={status} />
+
+          {/* Demo trigger */}
+          {status.state === "calm" && !isControlling && (
+            <button
+              onClick={startDemo}
+              style={{
+                padding: "14px 24px",
+                background: "var(--color-dusk-card)",
+                color: "var(--color-dusk-muted)",
+                fontFamily: "var(--font-mono)",
+                fontSize: "12px",
+                letterSpacing: "0.06em",
+                border: "1px solid var(--color-dusk-border)",
+                borderRadius: "8px",
+                cursor: "pointer",
+                transition: "color 0.2s var(--ease-drift), border-color 0.2s var(--ease-drift)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "var(--color-dusk-accent)";
+                e.currentTarget.style.borderColor = "var(--color-dusk-accent)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "var(--color-dusk-muted)";
+                e.currentTarget.style.borderColor = "var(--color-dusk-border)";
+              }}
+            >
+              Simulate stress escalation
+            </button>
+          )}
         </div>
 
         {/* Right — activity feed */}

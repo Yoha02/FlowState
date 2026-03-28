@@ -37,14 +37,19 @@ async def run(state: SharedSentinelState) -> None:
         elif stress < RECOVERY_THRESHOLD:
             state.consecutive_stressed = 0
 
-        # Check critical threshold
-        if state.consecutive_stressed >= STRESS_THRESHOLD:
+        # Check critical threshold — only fire once per breach
+        if (
+            state.consecutive_stressed >= STRESS_THRESHOLD
+            and not state.handoff_trigger.is_set()
+        ):
             state.handoff_trigger.set()
             state.current_state = SentinelState.CRITICAL
             log.info("CRITICAL — handoff triggered (consecutive=%d)", state.consecutive_stressed)
 
             # Launch handoff pipeline as a background task
             asyncio.create_task(_run_handoff_pipeline(state))
+        elif state.consecutive_stressed >= STRESS_THRESHOLD:
+            state.current_state = SentinelState.CRITICAL
         else:
             state.current_state = _map_state(stress)
 

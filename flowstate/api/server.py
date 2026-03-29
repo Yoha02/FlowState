@@ -25,6 +25,7 @@ app.add_middleware(
 )
 
 _state: SharedSentinelState | None = None
+_subscribers: list[asyncio.Queue] = []
 
 
 def set_state(s: SharedSentinelState) -> None:
@@ -32,8 +33,28 @@ def set_state(s: SharedSentinelState) -> None:
     _state = s
 
 
+async def _broadcast_loop():
+    """Drain the single sse_queue and fan out to all subscriber queues."""
+    while True:
+        event = await _state.sse_queue.get()
+        dead = []
+        for i, q in enumerate(_subscribers):
+            try:
+                q.put_nowait(event)
+            except asyncio.QueueFull:
+                dead.append(i)
+        # Remove dead/full subscribers in reverse order
+        for i in reversed(dead):
+            _subscribers.pop(i)
+
+
 class HandoffResponse(BaseModel):
     approved: bool
+
+
+@app.on_event("startup")
+async def startup():
+    asyncio.create_task(_broadcast_loop())
 
 
 @app.get("/health")
@@ -43,17 +64,24 @@ async def health():
 
 @app.get("/status/stream")
 async def status_stream():
+    sub_queue: asyncio.Queue = asyncio.Queue(maxsize=100)
+    _subscribers.append(sub_queue)
+
     async def event_generator():
-        heartbeat_interval = 5.0
-        while True:
-            try:
-                event = await asyncio.wait_for(_state.sse_queue.get(), timeout=heartbeat_interval)
-                yield {
-                    "event": event.type,
-                    "data": json.dumps(event.data),
-                }
-            except asyncio.TimeoutError:
-                yield {"event": "heartbeat", "data": ""}
+        try:
+            heartbeat_interval = 5.0
+            while True:
+                try:
+                    event = await asyncio.wait_for(sub_queue.get(), timeout=heartbeat_interval)
+                    yield {
+                        "event": event.type,
+                        "data": json.dumps(event.data),
+                    }
+                except asyncio.TimeoutError:
+                    yield {"event": "heartbeat", "data": ""}
+        finally:
+            if sub_queue in _subscribers:
+                _subscribers.remove(sub_queue)
 
     return EventSourceResponse(event_generator())
 
@@ -65,6 +93,13 @@ async def handoff_respond(body: HandoffResponse):
     else:
         _state.handoff_trigger.clear()
         _state.consecutive_stressed = 0
+    return {"ok": True}
+
+
+@app.post("/plan/confirm")
+async def plan_confirm():
+    """User confirmed the agent's proposed plan — proceed with execution."""
+    _state.plan_confirmed.set()
     return {"ok": True}
 
 

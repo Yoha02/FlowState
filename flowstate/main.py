@@ -14,6 +14,18 @@ from flowstate.api.server import app, set_state
 from flowstate.config import API_HOST, API_PORT
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
+log = logging.getLogger(__name__)
+
+
+async def _guarded(name: str, fn, state):
+    """Run an agent function forever, restarting on crash."""
+    while True:
+        try:
+            await fn(state)
+            return  # normal exit
+        except Exception:
+            log.exception("%s crashed — restarting in 3s", name)
+            await asyncio.sleep(3)
 
 
 async def _main():
@@ -25,10 +37,10 @@ async def _main():
 
     await asyncio.gather(
         server.serve(),
-        webcam_run(state),
-        screen_run(state),
-        orch_run(state),
-        sentiment_run(state),
+        _guarded("webcam", webcam_run, state),
+        _guarded("screen", screen_run, state),
+        _guarded("orchestrator", orch_run, state),
+        _guarded("sentiment", sentiment_run, state),
     )
 
 

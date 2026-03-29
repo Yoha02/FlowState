@@ -30,18 +30,9 @@ async def run(state: SharedSentinelState) -> None:
             async with state.webcam_lock:
                 frames = list(state.webcam_buffer)
 
-            allowed = await check_rate_limit("flowstate-sentiment")
-            if not allowed:
-                logger.info("Rate limited — using neutral score")
-                score = SentimentScore(
-                    stress=0.2,
-                    fatigue=0.2,
-                    raw_label="calm",
-                    frame_count=len(frames),
-                    scored_at=time.monotonic(),
-                )
-            else:
-                score = await analyse_sentiment([f.image_bytes for f in frames])
+            # Send only the latest frame for speed
+            latest = [frames[-1].image_bytes] if frames else []
+            score = await analyse_sentiment(latest)
 
             await state.score_queue.put(score)
             state.sentiment_history.append(score)

@@ -67,7 +67,7 @@ async def analyse_sentiment(frames: list[bytes]) -> SentimentScore:
 
         client = _get_client()
         response = await client.aio.models.generate_content(
-            model="gemini-2.0-flash", contents=parts
+            model="gemini-2.5-flash", contents=parts
         )
         text = response.text.strip()
         # Strip markdown fences if present
@@ -115,7 +115,7 @@ async def analyse_screen(screenshots: list[bytes], window_title: str) -> TaskCon
 
         client = _get_client()
         response = await client.aio.models.generate_content(
-            model="gemini-2.0-flash", contents=parts
+            model="gemini-2.5-flash", contents=parts
         )
         text = response.text.strip()
         if text.startswith("```"):

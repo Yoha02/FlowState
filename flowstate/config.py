@@ -4,19 +4,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# --- Detection thresholds ---
-STRESS_THRESHOLD: int = int(os.getenv("STRESS_THRESHOLD", "3"))       # consecutive frames
-STRESS_SCORE_CUTOFF: float = float(os.getenv("STRESS_SCORE_CUTOFF", "0.65"))
-FATIGUE_SCORE_CUTOFF: float = float(os.getenv("FATIGUE_SCORE_CUTOFF", "0.55"))
-RECOVERY_THRESHOLD: float = float(os.getenv("RECOVERY_THRESHOLD", "0.35"))
+# --- Detection thresholds (tuned for fast demo) ---
+STRESS_THRESHOLD: int = int(os.getenv("STRESS_THRESHOLD", "2"))       # consecutive stressed before handoff
+STRESS_SCORE_CUTOFF: float = float(os.getenv("STRESS_SCORE_CUTOFF", "0.25"))
+FATIGUE_SCORE_CUTOFF: float = float(os.getenv("FATIGUE_SCORE_CUTOFF", "0.10"))
+RECOVERY_THRESHOLD: float = float(os.getenv("RECOVERY_THRESHOLD", "0.15"))
 
-# --- Timing ---
-TICK_WEBCAM_SECONDS: int = int(os.getenv("TICK_WEBCAM_SECONDS", "5"))
-TICK_SCREEN_SECONDS: int = int(os.getenv("TICK_SCREEN_SECONDS", "15"))
-HANDOFF_TIMEOUT_SECONDS: int = int(os.getenv("HANDOFF_TIMEOUT_SECONDS", "30"))
+# --- Timing (fast capture — 1s per frame, 2 frames to analyse) ---
+TICK_WEBCAM_SECONDS: int = int(os.getenv("TICK_WEBCAM_SECONDS", "1"))
+TICK_SCREEN_SECONDS: int = int(os.getenv("TICK_SCREEN_SECONDS", "10"))
+HANDOFF_TIMEOUT_SECONDS: int = int(os.getenv("HANDOFF_TIMEOUT_SECONDS", "60"))
 
 # --- Buffer sizes ---
-WEBCAM_BUFFER_SIZE: int = 5
+WEBCAM_BUFFER_SIZE: int = 2
 SCREEN_BUFFER_SIZE: int = 10
 
 # --- API keys ---

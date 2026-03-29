@@ -120,6 +120,9 @@ class SharedSentinelState:
     # Demo mode — pauses real sentiment loop so injected scores aren't overridden
     demo_active: bool = False
 
+    # Plan confirmation — control agent waits for user to confirm before executing
+    plan_confirmed: Optional[asyncio.Event] = field(default=None, repr=False)
+
     # --- asyncio primitives (initialised in main.py via init_events()) ---
     webcam_fill_event: Optional[asyncio.Event] = field(default=None, repr=False)
     handoff_trigger: Optional[asyncio.Event] = field(default=None, repr=False)
@@ -146,4 +149,5 @@ def init_state() -> SharedSentinelState:
     s.sse_queue = asyncio.Queue(maxsize=100)
     s.webcam_lock = asyncio.Lock()
     s.screen_lock = asyncio.Lock()
+    s.plan_confirmed = asyncio.Event()
     return s

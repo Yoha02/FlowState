@@ -67,18 +67,28 @@ async def run(state: SharedSentinelState) -> None:
 
 async def _run_handoff_pipeline(state: SharedSentinelState) -> None:
     """Chain: negotiator (consent) -> assessor (context) -> control (takeover)."""
+    rejected = False
     try:
         await negotiator.run(state)
         await assessor.run(state)
         await control.run(state)
+    except RuntimeError:
+        # Negotiator timeout/rejection — keep scanning
+        rejected = True
+        log.info("Handoff rejected/timed out — will re-trigger on next stress")
     except Exception:
         log.exception("Handoff pipeline failed")
     finally:
-        # Reset all handoff state
         state.stop_control.clear()
         state.context_ready.clear()
         state.handoff_approved.clear()
         state.handoff_trigger.clear()
-        state.consecutive_stressed = 0
-        state.current_state = SentinelState.CALM
-        log.info("Handoff pipeline complete — reset to CALM")
+        if rejected:
+            # Keep consecutive high so next stressed frame re-triggers
+            state.consecutive_stressed = STRESS_THRESHOLD - 1
+            state.current_state = SentinelState.STRESSED
+            log.info("Handoff pipeline reset — ready to re-trigger")
+        else:
+            state.consecutive_stressed = 0
+            state.current_state = SentinelState.CALM
+            log.info("Handoff pipeline complete — reset to CALM")
